@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Page</title>
+
+    <style>
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+h3 {
+    font-size: 24px;
+    color: #343a40;
+}
+
+.input-group {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.form-control {
+    width: 70%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.input-group-append {
+    margin-left: -1px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+#result {
+    margin-top: 30px;
+}
+
+.card {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px;
+    font-size: 18px;
+    border-bottom: 1px solid #ced4da;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+
+.card-body {
+    padding: 20px;
+    font-size: 16px;
+    background-color: #fff;
+}
+
+.text-center p {
+    font-size: 16px;
+    color: #6c757d;
+}
+
+.text-center strong {
+    color: #343a40;
+}
+
+    </style>
+    <!-- Include jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <div class="text-center">
+            <h3>Disease to Drug Search</h3>
+            <br>
+            <div class="input-group mb-3">
+                <input type="text" id="diseaseInput" class="form-control" placeholder="Enter disease name">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" onclick="searchDrug()">Search</button>
+                </div>
+            </div>
+        </div>
+        <div id="result" class="mt-5">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+    function searchDrug() {
+        var diseaseName = document.getElementById('diseaseInput').value.trim();
+        if (diseaseName === "") {
+            alert("Please enter a disease name");
+            return;
+        }
+        $.ajax({
+            url: "{% url 'medicine_search' %}",
+            type: "POST",
+            data: {
+                "diseaseName": diseaseName,
+                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+            },
+            dataType: 'json',
+            success: function(data) {
+                var resultDiv = $('#result');
+                resultDiv.empty();
+                if (data.drug) {
+                    resultDiv.html('<div class="card"><div class="card-header">Related Drug</div><div class="card-body">' + data.drug + '</div></div>');
+                } else {
+                    resultDiv.html('<div class="text-center"><p>No drugs found for <strong>' + diseaseName + '</strong>.</p></div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                $('#result').html('<div class="text-center"><p>Error searching for drugs. Please try again later.</p></div>');
+            }
+        });
+    }
+    </script>
+</body>
+</html>

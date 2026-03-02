@@ -1,0 +1,172 @@
+{% extends "basic.html" %}
+{% load static %}
+
+{% block head %}
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f8f9fa;
+        color: #343a40;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .profile-card {
+        display: inline-block;
+        width: 100%;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .profile-card img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 15px;
+    }
+
+    .profile-card h4, .profile-card p {
+        margin: 10px 0;
+    }
+
+    .profile-card h4 {
+        font-size: 1.8rem;
+        color: #007bff;
+    }
+
+    .buttons-row {
+        margin-top: 20px;
+    }
+
+    .buttons-row a, .buttons-row button {
+        display: inline-block;
+        margin: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: white;
+        background-color: #007bff;
+        border: none;
+        border-radius: 20px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .buttons-row a:hover, .buttons-row button:hover {
+        background-color: #0056b3;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .modal-header, .modal-footer {
+        border: none;
+        text-align: center;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+    }
+
+    textarea {
+        resize: none;
+        border-radius: 8px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin-top: 20px;
+    }
+
+    #submit {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: white;
+        background-color: #28a745;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #submit:hover {
+        background-color: #218838;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="profile-card">
+        <img src="{% static 'homepage/patient.png' %}" alt="Patient Image">
+        <h4>{{ puser.patient.name }}</h4>
+        <p>ID: {{ puser.patient.user_id }}</p>
+        <p>Email: {{ puser.email }}</p>
+        <a href="{% url 'pviewprofile' puser.username %}" class="btn">View Profile</a>
+    </div>
+
+    <div class="buttons-row">
+        <a href="{% url 'checkdisease' %}" class="btn">Check Disease</a>
+        <a href="{% url 'pconsultation_history' %}" class="btn">Consultation History</a>
+        <button class="btn" data-toggle="modal" data-target="#feedbackModal">Give Feedback</button>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div class="modal fade" id="feedbackModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Feedback</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'post_feedback' %}" method="POST">
+                        {% csrf_token %}
+                        <textarea id="feedback" name="feedback" rows="5" placeholder="Your feedback..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button id="submit" type="submit">Submit</button>
+                </div>
+                    </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#submit').click(function(event) {
+        event.preventDefault();
+        $.ajax({
+            url: "{% url 'post_feedback' %}",
+            type: "POST",
+            data: {
+                feedback: $('#feedback').val(),
+                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function(response) {
+                alert('Feedback submitted successfully!');
+                $('#feedbackModal').modal('hide');
+            },
+            error: function() {
+                alert('Error submitting feedback. Please try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

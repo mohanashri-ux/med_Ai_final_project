@@ -1,0 +1,356 @@
+{% extends "basic.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f8f9fa;
+        color: #343a40;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h3 {
+        color: #007bff;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary, .btn-success {
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover, .btn-success:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    .drop-content {
+        background-color: #f1f1f1;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .searchbar {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    .dropdown-item {
+        display: block;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+        background-color: #ddd;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background-color: #007bff;
+        color: white;
+        border-radius: 8px 8px 0 0;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .card-footer {
+        background-color: #f1f1f1;
+        border-radius: 0 0 8px 8px;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .diseasefield {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .progress {
+        height: 20px;
+        border-radius: 10px;
+    }
+
+    .progress-bar {
+        line-height: 20px;
+    }
+
+    .mt-5 {
+        margin-top: 3rem !important;
+    }
+
+    .mt-3 {
+        margin-top: 1rem !important;
+    }
+
+    .ml-4 {
+        margin-left: 1.5rem !important;
+    }
+
+    /* Glassmorphism style for result card */
+    .glass-result {
+        background-color: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        width: 300px;
+    }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="text-center">
+        <h3>Identify Possible Conditions and Treatment Related to Your Symptoms</h3>
+        <button onclick="Functionshow()" class="btn btn-primary mt-3">Add Symptoms</button>
+    </div>
+
+    <div id="myDropdown" class="drop-content mt-3" style="display: none;">
+        <input id="searchbar" class="searchbar" onkeyup="search_symptoms()" type="text" placeholder="Search symptoms..">
+        <div id="container-dropdown" class="mt-2">
+            {% for i in list2 %}
+            <div class="dropdown-item" onclick="Functionsymptoms(this.textContent)">{{ i }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card mt-5">
+        {% csrf_token %}
+        <div class="card-header">Symptoms List</div>
+        <div class="card-body" id="sympbox"></div>
+        <div class="card-footer">
+            <button id="predict" class="btn btn-success">Predict</button>
+        </div>
+    </div>
+
+    <div id="resultdiv" class="card mt-5" style="align-items:center ;">
+        <div class="card-body text-center glass-result">
+            <div>
+                <span class="diseasefield" style="font-weight: bolder;">Patient name: {{ user.patient.name }}</span>
+                <span class="diseasefield ml-4"style="font-weight: bolder;">Age: {{ user.patient.age }}</span>
+            </div>
+            <div>
+                <span class="diseasefield"style="font-weight: bolder;">Predicted disease is:</span>
+                <span id="diseasefield" class="diseasefield text-success font-weight-bold"></span>
+            </div>
+            <div class="mt-3">
+                <span class="diseasefield"style="font-weight: bolder;">Confidence score:</span>
+                <div class="progress d-inline-block" style="width: 140px;">
+                    <div id="percentage" class="progress-bar bg-success" style="width: 0%"style="font-weight: bolder;">0%</div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <form action="medicine" method="get">
+                    {% csrf_token %}
+                    <button id="tabletnow" type="submit" class="btn btn-primary">Tablet</button>
+                </form>
+            </div>
+            <div class="mt-3">
+                <a id="href" href="#" target="_blank" class="btn btn-outline-success">Click here to know more about <span id="diseasesearch" class="text-danger"></span></a>
+            </div>
+        </div>
+        <div id="warning" class="alert alert-danger mt-3" style="display: none;">
+            <strong>Warning!</strong> Please go to the nearest hospital immediately.
+        </div>
+    </div>
+
+    <div id="consultdiv" class="text-center mt-4">
+        <form action="consult_a_doctor" method="GET">
+            {% csrf_token %}
+            <button id="consultbtn" type="submit" class="btn btn-primary">Consult a <span id="consultdoctor"></span> Doctor</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal for high confidence score -->
+<div id="hospitalModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <p><strong>Warning!</strong> The confidence score is above 70%. Please go to the nearest hospital immediately.</p>
+        <button class="btn btn-primary" onclick="searchHospitals()">Search Nearby Hospitals</button>
+    </div>
+</div>
+
+<script>
+function Functionshow() {
+    var dropdown = document.getElementById("myDropdown");
+    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    if (dropdown.style.display === "block") {
+        document.getElementById("searchbar").value = '';
+        search_symptoms(); // reset the search results when dropdown is shown
+    }
+}
+
+window.onclick = function(event) {
+    if (!event.target.matches('.btn, .searchbar')) {
+        var dropdowns = document.getElementsByClassName("drop-content");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.style.display === "block") {
+                openDropdown.style.display = "none";
+            }
+        }
+    }
+}
+
+function Functionsymptoms(name) {
+    var newItem = document.createElement("div");
+    newItem.textContent = name;
+    newItem.setAttribute("class", "symptoms form-control mt-2");
+    newItem.innerHTML += '<i class="fa fa-times ml-2" onclick="removeSymptom(this)"></i>';
+    document.getElementById("sympbox").appendChild(newItem);
+}
+
+function removeSymptom(element) {
+    element.parentNode.remove();
+}
+
+function search_symptoms() {
+    let input = document.getElementById('searchbar').value.toLowerCase();
+    let items = document.getElementsByClassName('dropdown-item');
+    for (let i = 0; i < items.length; i++) {
+        items[i].style.display = items[i].innerHTML.toLowerCase().includes(input) ? "block" : "none";
+    }
+}
+
+function openModal() {
+    document.getElementById("hospitalModal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("hospitalModal").style.display = "none";
+}
+
+function searchHospitals() {
+    window.open("https://www.google.com/maps/search/nearby+hospitals");
+}
+
+$(document).ready(function() {
+    $("#predict").click(function(event) {
+        event.preventDefault();
+        var symptoms = document.getElementsByClassName("symptoms");
+        var noofsym = symptoms.length;
+        var symlist = [];
+        if (noofsym == 0) {
+            alert("Please add some symptoms");
+        } else {
+            for (let i = 0; i < noofsym; i++) {
+                symlist[i] = symptoms[i].textContent;
+            }
+            $("#resultdiv").show("slow");
+            $('html, body').animate({ scrollTop: $("#resultdiv").offset().top }, 'slow');
+            $.ajax({
+                url: 'checkdisease',
+                type: "POST",
+                data: {
+                    "noofsym": noofsym,
+                    "symptoms": symlist,
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#diseasefield').text(data["predicteddisease"]);
+                    $('#percentage').text(data["confidencescore"] + "%").css('width', data["confidencescore"] + "%");
+                    // Show warning and disable tablet button if confidence score is less than 20%
+                    if (parseInt(data["confidencescore"]) < 20) {
+                        $('#warning').show();
+                        $('#tabletnow').prop('disabled', true);
+                    } else {
+                        $('#warning').hide();
+                        $('#tabletnow').prop('disabled', false);
+                    }
+
+                    // Handle hospital warning for confidence score above 70%
+                    if (parseInt(data["confidencescore"]) > 70) {
+                        $('#warning').html('<strong>Warning!</strong> Please go to the nearest hospital immediately.');
+                        $('#warning').show();
+                        $('#consultdiv').hide();
+                        // Show the modal
+                        openModal();
+                    } else {
+                        $('#consultdiv').show();
+                    }
+
+                    $('#diseasesearch').text(data["predicteddisease"]);
+                    $("#href").attr("href", "https://www.google.com/search?q=" + data["predicteddisease"]);
+                    $('#consultdoctor').text(data["consultdoctor"]);
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,16 @@
+<!-- Example in base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ZigZag{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'homepage/css/style.css' %}">
+    <script src="{% static 'homepage/js/script.js' %}"></script>
+</head>
+<body>
+    {% block content %}
+    <!-- Content here -->
+    {% endblock %}
+</body>
+</html>
