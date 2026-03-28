@@ -13,6 +13,7 @@ import DoctorDashboard from './pages/DoctorDashboard';
 import Predict from './pages/Predict';
 import Consultation from './pages/Consultation';
 import FloatingChatbot from './components/FloatingChatbot';
+import Chatbot from './pages/Chatbot';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -69,6 +70,7 @@ function App() {
         </main>
 
         <FloatingChatbot />
+        <Chatbot />
 
         {/* Footer */}
         <footer className="py-8 px-6 text-center text-slate-500 text-sm border-t border-white/5">

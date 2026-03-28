@@ -8,6 +8,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from chats.views import ai_chat
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -20,4 +22,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('chats/', include('chats.urls')),
     path('medicine/', include('medicine.urls')),
+    path("chat/", include("chats.urls")),
+    path('ai_chat', ai_chat, name='ai_chat')
 ]

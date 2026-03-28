@@ -66,3 +66,46 @@ def get_feedback(request):
 
 #          c = Chat.objects.filter(consultation_id=consultation_id)
 #          return render(request, 'consultation/chat_body.html', {'chat': c})
+
+import json
+import ollama
+# from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def ai_chat(request):
+
+    user_message = request.data.get("message", "")
+
+    response = ollama.chat(
+        model="phi3",
+        messages=[{"role": "user", "content": user_message}]
+    )
+
+    reply = response["message"]["content"]
+
+    return JsonResponse({"reply": reply})
+
+
+
+
+# @csrf_exempt
+# def ai_chat(request):
+    
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+#         user_message = data.get('message', '')
+
+#         # Call Ollama API to get AI response
+#         response = ollama.chat(model="phi3", messages=[{"role": "user", "content": user_message}])
+#         reply=response["message"]["content"]
+
+#         return JsonResponse({'response': reply})
+#     else:
+#         return JsonResponse({'error': 'Invalid request method!!!.'}, status=400)
+        
